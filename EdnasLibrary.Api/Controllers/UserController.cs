@@ -1,6 +1,7 @@
 ﻿using EdnasLibrary.Application.Commands.AuthJwt;
 using EdnasLibrary.Application.Commands.User;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EdnasLibrary.Api.Controllers
@@ -12,6 +13,7 @@ namespace EdnasLibrary.Api.Controllers
         private readonly IMediator _mediator = mediator;
 
         [HttpPost]
+        [Route("Register")]
         public async Task<ActionResult> AddUser(AddUserCommand command)
         {
             var result = await _mediator.Send(command);
@@ -24,6 +26,14 @@ namespace EdnasLibrary.Api.Controllers
         {
             var result = await _mediator.Send(command);
             return Ok(result);
+        }
+
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet]       
+        public ActionResult GetStatus()
+        {
+            return Ok("Hello Admin!");
         }
     }
 }

@@ -17,30 +17,29 @@ namespace EdnasLibrary.Infra.Repositories
 
         public async Task<string> GenerateToken(JwtTokenUser jwtTokenUser)
         {
-            // Configurando Key JWT
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
+            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:Key"] ?? string.Empty));
+            var issuer = _config["JwtSettings:Issuer"];
+            var audience = _config["JwtSettings:Audience"];
 
-            // Selecionando as claims que serão adicionadas ao token
-            var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, jwtTokenUser.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, jwtTokenUser.Email ?? ""),
-                new Claim(ClaimTypes.Role, jwtTokenUser.Role.ToString())
-            };
+            var singinCredential = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
 
-            // Configurando o token
-            var token = new JwtSecurityToken(
-                issuer: _config["JwtSettings:Issuer"],
-                audience: _config["JwtSettings:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(Convert.ToInt32(_config["JwtSettings:DurationInMinutes"])),
-                signingCredentials: credentials
-            );
+            var tokenOptions = new JwtSecurityToken(
+            issuer: issuer,
+            audience: audience,
+            claims: new[]
+                {
+                    new Claim(type: "UserId", jwtTokenUser.Id.ToString()),
+                    new Claim(type: "Email", jwtTokenUser.Email),
+                    new Claim(type: ClaimTypes.Role, jwtTokenUser.Role.ToString())
+                },
+                expires: DateTime.Now.AddMinutes(int.Parse(_config["JwtSettings:DurationInMinutes"])),
+                signingCredentials: singinCredential
+                );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
+
+            return token;
 
         }
 
@@ -64,10 +63,9 @@ namespace EdnasLibrary.Infra.Repositories
             var token = tokenHandler.ReadJwtToken(tokenString);
 
             // Obter informações do usuário a partir das claims
-            var userId = token.Claims.First(claim => claim.Type == JwtRegisteredClaimNames.Sub).Value;
-            var email = token.Claims.First(claim => claim.Type == JwtRegisteredClaimNames.Email).Value;
-
-            Console.WriteLine($"email {email}");
+            var userId = token.Claims.First(claim => claim.Type == "UserId").Value;
+            var email = token.Claims.First(claim => claim.Type == "Email").Value;
+            
 
 
             // Agora você pode usar as informações do usuário como necessário
