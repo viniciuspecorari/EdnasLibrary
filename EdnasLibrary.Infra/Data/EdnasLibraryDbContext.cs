@@ -1,4 +1,5 @@
 ﻿using EdnasLibrary.Core.Entities;
+using EdnasLibrary.Infra.Configuration;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,6 +25,8 @@ namespace EdnasLibrary.Infra.Data
                 .Property(b => b.Id)
                 .HasDefaultValueSql("NEWSEQUENTIALID()");
 
+            
+            builder.ApplyConfiguration(new RoleConfiguration());
             base.OnModelCreating(builder);
         }
     }
