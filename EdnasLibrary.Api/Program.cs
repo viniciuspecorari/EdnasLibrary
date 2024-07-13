@@ -1,5 +1,8 @@
 using EdnasLibrary.Api.Middleware;
+using EdnasLibrary.Application;
+using EdnasLibrary.Core.Contracts;
 using EdnasLibrary.Infra.Data;
+using EdnasLibrary.Infra.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -9,10 +12,17 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+
+// Add dependencys
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthJwtRepository, AuthJwtRepository>();
+MediatrDependency.RegisterServices(builder.Services); // Mediatr
+builder.Services.AddHttpContextAccessor();
+
 
 // Configurando contexto de banco de dados
 builder.Services.AddDbContext<EdnasLibraryDbContext>(options =>
@@ -20,7 +30,7 @@ builder.Services.AddDbContext<EdnasLibraryDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("EdnasLibraryDB"));
 });
 
-// Configurando Middleware JWT
+// Configurando middleware JWT
 builder.Services.AddAuthentication(x =>
 {
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -86,10 +96,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<ErrorHandlerMiddleware>();
+
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.UseAuthentication();
-app.UseMiddleware<ErrorHandlerMiddleware>();
+
 
 app.MapControllers();
 

@@ -4,6 +4,7 @@ using EdnasLibrary.Infra.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EdnasLibrary.Infra.Migrations
 {
     [DbContext(typeof(EdnasLibraryDbContext))]
-    partial class EdnasLibraryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240713202507_AddNewColumnsToUser")]
+    partial class AddNewColumnsToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

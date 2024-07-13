@@ -1,22 +1,31 @@
 ﻿using EdnasLibrary.Core.Entities;
-using EdnasLibrary.Infra.Configuration;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace EdnasLibrary.Infra.Data
 {
-    public class EdnasLibraryDbContext : IdentityDbContext<User>
+    public class EdnasLibraryDbContext : DbContext
     {
         public EdnasLibraryDbContext(DbContextOptions<EdnasLibraryDbContext> options) : base(options)
         {
             
         }
 
-        DbSet<Book> Books { get; set; }
-        DbSet<BooksLoan> BooksLoans { get; set; }
+        public DbSet<ApiUser> Users { get; set; }
+        public DbSet<Book> Books { get; set; }
+        public DbSet<BooksLoan> BooksLoans { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+
+            builder.Entity<ApiUser>()
+                .Property(b => b.Id)
+                .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+            builder.Entity<ApiUser>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
+
+
             builder.Entity<Book>()
                 .Property(b => b.Id)
                 .HasDefaultValueSql("NEWSEQUENTIALID()");
@@ -24,9 +33,7 @@ namespace EdnasLibrary.Infra.Data
             builder.Entity<BooksLoan>()
                 .Property(b => b.Id)
                 .HasDefaultValueSql("NEWSEQUENTIALID()");
-
-            
-            builder.ApplyConfiguration(new RoleConfiguration());
+                       
             base.OnModelCreating(builder);
         }
     }
